@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Gummy Menu</title>
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Gummy Menu">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap');
+        
+        /* --- RESPONSIVE GENERAL STYLES --- */
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background: radial-gradient(circle, #ffffff 0%, #f0f0f0 100%);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #ff4757;
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- IMPROVED AND LARGER LOGO --- */
+        .logo-img {
+            width: clamp(120px, 25vw, 200px); /* Larger: 25% of viewport width */
+            height: auto;
+            margin-bottom: 15px;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+        }
+        
+        /* Subtle effect when hovering over the logo */
+        .logo-img:hover {
+            transform: scale(1.05);
+        }
+
+        header h1 { 
+            margin: 0; 
+            font-size: clamp(2rem, 6vw, 3rem); /* Also larger */
+            padding: 0 10px;
+            color: #ff4757;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        header p { 
+            font-size: clamp(1.3rem, 3.7vw, 1.6rem); /* A bit larger */
+            color: #666; 
+            margin-top: 10px;
+            padding: 0 10px;
+            max-width: 600px;
+        }
+
+        /* --- RESPONSIVE MENU GRID --- */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            width: 100%;
+            padding-bottom: 50px;
+        }
+
+        /* --- INDIVIDUAL MENU ITEM --- */
+        .menu-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 10px;
+        }
+
+        /* --- RESPONSIVE IMAGE CONTAINER --- */
+        .image-container {
+            position: relative;
+            width: 100%;
+            max-width: 280px;
+            aspect-ratio: 1 / 1;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        /* For browsers that don't support aspect-ratio */
+        .image-container::before {
+            content: '';
+            display: block;
+            padding-top: 100%;
+        }
+        
+        /* Light hover effect */
+        .image-container:hover {
+            transform: scale(1.05);
+        }
+
+        /* Common styles for BOTH images */
+        .gummy-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            transition: opacity 0.8s ease-in-out;
+        }
+
+        /* Normal Image (Bottom layer) */
+        .img-normal {
+            z-index: 1;
+            opacity: 1;
+        }
+
+        .img-normal-hidden {
+            opacity: 0;
+        }
+
+        /* Spicy Image (Top layer) */
+        .img-spicy {
+            z-index: 2;
+            opacity: 0;
+        }
+
+        /* --- ACTIVE STATE --- */
+        .image-container.active .img-spicy {
+            opacity: 1;
+        }
+
+        /* --- RESPONSIVE ITEM INFORMATION --- */
+        .item-info h3 {
+            margin: 15px 0 8px 0;
+            font-size: clamp(1.2rem, 4vw, 1.5rem);
+            color: #333;
+            line-height: 1.3;
+        }
+
+        .price {
+            display: inline-block;
+            padding: 6px 12px;
+            background-color: #ff4757;
+            color: white;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: clamp(0.9rem, 3vw, 1.1rem);
+        }
+
+        /* --- RESPONSIVE "NEW!" BADGE --- */
+        .badge-new {
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            width: clamp(60px, 15vw, 100px);
+            height: auto;
+            z-index: 10;
+            pointer-events: none;
+            transform: rotate(-15deg);
+        }
+
+        /* --- LOGO-SPECIFIC MEDIA QUERIES --- */
+        
+        /* Very small screens (small mobiles) */
+        @media (max-width: 350px) {
+            body {
+                padding: 15px;
+            }
+            
+            .logo-img {
+                width: 90px; /* Fixed minimum size for very small mobiles */
+            }
+            
+            .menu-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+        
+        /* Mobiles in portrait mode */
+        @media (min-width: 351px) and (max-width: 767px) {
+            .logo-img {
+                width: 110px; /* Good size for normal mobiles */
+            }
+        }
+        
+        /* Tablets and large mobiles */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .logo-img {
+                width: 120px; /* Larger on tablets */
+            }
+            
+            .menu-grid {
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                gap: 40px;
+            }
+        }
+        
+        /* Small desktop */
+        @media (min-width: 1025px) and (max-width: 1366px) {
+            .logo-img {
+                width: 135px; /* Ideal size for desktop */
+            }
+        }
+        
+        /* Large desktop */
+        @media (min-width: 1367px) {
+            .logo-img {
+                width: 150px; /* Maximum size */
+            }
+        }
+        
+        /* For very wide screens (ultra-wide) */
+        @media (min-width: 1600px) {
+            .logo-img {
+                width: 160px; /* A bit more for ultra-wide screens */
+            }
+            
+            .menu-grid {
+                grid-template-columns: repeat(4, 1fr);
+                max-width: 1400px;
+            }
+        }
+        
+        /* Landscape orientation on mobiles */
+        @media (max-height: 600px) and (orientation: landscape) {
+            header {
+                margin-bottom: 15px;
+                flex-direction: row; /* Logo and text in a row */
+                justify-content: center;
+                gap: 20px;
+                flex-wrap: wrap;
+            }
+            
+            .logo-img {
+                width: 100px; /* A bit smaller in landscape */
+                margin-bottom: 0;
+            }
+            
+            .menu-grid {
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                gap: 20px;
+            }
+        }
+
+        /* For when the logo is very tall (vertical format) */
+        @media (max-width: 480px) and (orientation: portrait) {
+            .logo-img {
+                max-height: 120px; /* Limits height on mobiles */
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <img src="logo.webp" class="logo-img" alt="Gummies Logo" 
+             onerror="this.onerror=null; this.src='https://via.placeholder.com/200x100/ff4757/ffffff?text=Gummies+Logo'">
+        <div>
+            <h1>Gummy Menu</h1>
+            <p>👆 Spice up your favorite gummy with a click</p>
+        </div>
+    </header>
+
+    <main class="menu-grid">
+        <div class="menu-item">
+            <div class="image-container" onclick="toggleSpicy(this)">
+                <img src="new.webp" class="badge-new" alt="New Badge">
+                <img src="paleta_pepino.webp" alt="Cucumber Lollipop" class="gummy-img img-normal">
+                <img src="paleta_pepino_enchilado.webp" alt="Spicy Cucumber Lollipop" class="gummy-img img-spicy">
+            </div>
+            <div class="item-info">
+                <h3>Cucumber Lollipop</h3>
+                <span class="price">$3.00</span>
+            </div>
+        </div>
+        
+        <div class="menu-item">
+            <div class="image-container" onclick="toggleSpicy(this)">
+                <img src="new.webp" class="badge-new" alt="New Badge">
+                <img src="paleta_pina.webp" alt="Pineapple Lollipop" class="gummy-img img-normal">
+                <img src="paleta_pina_enchilada.webp" alt="Spicy Pineapple Lollipop" class="gummy-img img-spicy">
+            </div>
+            <div class="item-info">
+                <h3>Pineapple Lollipop</h3>
+                <span class="price">$3.00</span>
+            </div>
+        </div>
+
+        <div class="menu-item">
+            <div class="image-container" onclick="toggleSpicy(this)">
+                <img src="new.webp" class="badge-new" alt="New Badge">
+                <img src="sonrisas.webp" alt="Smiles" class="gummy-img img-normal">
+                <img src="sonrisas_enchiladas.webp" alt="Spicy Smiles" class="gummy-img img-spicy">
+            </div>
+            <div class="item-info">
+                <h3>Smiles</h3>
+                <span class="price">$3.00</span>
+            </div>
+        </div>
+
+        <div class="menu-item">
+            <div class="image-container" onclick="toggleSpicy(this)">
+                <img src="new.webp" class="badge-new" alt="New Badge">
+                <img src="cherry.webp" alt="Cherry" class="gummy-img img-normal">
+                <img src="cherry_enchilada.webp" alt="Spicy Cherry" class="gummy-img img-spicy">
+            </div>
+            <div class="item-info">
+                <h3>Cherry</h3>
+                <span class="price">$3.00</span>
+            </div>
+        </div>
+
+        <div class="menu-item">
+            <div class="image-container" onclick="toggleSpicy(this)">
+                <img src="aros_de_durazno.webp" alt="Peach Rings" class="gummy-img img-normal">
+                <img src="aros_de_durazno_enchilado.webp" alt="Spicy Peach Rings" class="gummy-img img-spicy">
+            </div>
+            <div class="item-info">
+                <h3>Peach Rings</h3>
+                <span class="price">$3.00</span>
+            </div>
+        </div>
+
+        <div class="menu-item">
+            <div class="image-container" onclick="toggleSpicy(this)">
+                <img src="aros_de_manzana.webp" alt="Apple Rings" class="gummy-img img-normal">
+                <img src="aros_de_manzana_enchilados.webp" alt="Spicy Apple Rings" class="gummy-img img-spicy">
+            </div>
+            <div class="item-info">
+                <h3>Apple Rings</h3>
+                <span class="price">$3.00</span>
+            </div>
+        </div>
+
+        <div class="menu-item">
+            <div class="image-container" onclick="toggleSpicy(this)">
+                <img src="aros_sandia.webp" alt="Watermelon Rings" class="gummy-img img-normal">
+                <img src="aros_sandia_enchilados.webp" alt="Spicy Watermelon Rings" class="gummy-img img-spicy">
+            </div>
+            <div class="item-info">
+                <h3>Watermelon Rings</h3>
+                <span class="price">$3.00</span>
+            </div>
+        </div>
+        
+        <div class="menu-item">
+            <div class="image-container" onclick="toggleSpicy(this)">
+                <img src="dulce_de_tamarindo.webp" alt="Tamarind Candy" class="gummy-img img-normal">
+                <img src="dulce_de_tamarindo_enchilado.webp" alt="Spicy Tamarind Candy" class="gummy-img img-spicy">
+            </div>
+            <div class="item-info">
+                <h3>Tamarind Candy</h3>
+                <span class="price">$3.00</span>
+            </div>
+        </div>
+        
+        <div class="menu-item">
+            <div class="image-container" onclick="toggleSpicy(this)">
+                <img src="panditas_gomitas.webp" alt="Gummy Bears" class="gummy-img img-normal">
+                <img src="panditas_gomitas_enchiladas.webp" alt="Spicy Gummy Bears" class="gummy-img img-spicy">
+            </div>
+            <div class="item-info">
+                <h3>Gummy Bears</h3>
+                <span class="price">$3.00</span>
+            </div>
+        </div>
+        
+        <div class="menu-item">
+            <div class="image-container" onclick="toggleSpicy(this)">
+                <img src="tiburones.webp" alt="Sharks" class="gummy-img img-normal">
+                <img src="tiburones_enchilados.webp" alt="Spicy Sharks" class="gummy-img img-spicy">
+            </div>
+            <div class="item-info">
+                <h3>Sharks</h3>
+                <span class="price">$3.00</span>
+            </div>
+        </div>
+        
+        <div class="menu-item">
+            <div class="image-container" onclick="toggleSpicy(this)">
+                <img src="sandias.webp" alt="Watermelons" class="gummy-img img-normal">
+                <img src="sandias_enchiladas.webp" alt="Spicy Watermelons" class="gummy-img img-spicy">
+            </div>
+            <div class="item-info">
+                <h3>Watermelons</h3>
+                <span class="price">$3.00</span>
+            </div>
+        </div>
+        
+        <div class="menu-item">
+            <div class="image-container" onclick="toggleSpicy(this)">
+                <img src="manguitos.webp" alt="Mango Gummies" class="gummy-img img-normal">
+                <img src="manguitos_enchilados.webp" alt="Spicy Mango Gummies" class="gummy-img img-spicy">
+            </div>
+            <div class="item-info">
+                <h3>Mango Gummies</h3>
+                <span class="price">$3.00</span>
+            </div>
+        </div>
+        
+        <div class="menu-item">
+            <div class="image-container" onclick="toggleSpicy(this)">
+                <img src="lombrices.webp" alt="Gummy Worms" class="gummy-img img-normal">
+                <img src="lombrices_enchilados.webp" alt="Spicy Gummy Worms" class="gummy-img img-spicy">
+            </div>
+            <div class="item-info">
+                <h3>Gummy Worms</h3>
+                <span class="price">$3.00</span>
+            </div>
+        </div>
+        
+        <div class="menu-item">
+            <div class="image-container" onclick="toggleSpicy(this)">
+                <img src="frutitas.webp" alt="Little Fruits" class="gummy-img img-normal">
+                <img src="frutitas_enchiladas.webp" alt="Spicy Little Fruits" class="gummy-img img-spicy">
+            </div>
+            <div class="item-info">
+                <h3>Little Fruits</h3>
+                <span class="price">$3.00</span>
+            </div>
+        </div>
+        
+        <div class="menu-item">
+            <div class="image-container" onclick="toggleSpicy(this)">
+                <img src="picagomas.webp" alt="Lips" class="gummy-img img-normal">
+                <img src="picagomas_enchiladas.webp" alt="Spicy Lips" class="gummy-img img-spicy">
+            </div>
+            <div class="item-info">
+                <h3>Lips</h3>
+                <span class="price">$3.00</span>
+            </div>
+        </div>
+        
+        <div class="menu-item">
+            <div class="image-container" onclick="toggleSpicy(this)">
+                <img src="skittles.webp" alt="Skittles" class="gummy-img img-normal">
+                <img src="skittles_enchilados.webp" alt="Spicy Skittles" class="gummy-img img-spicy">
+            </div>
+            <div class="item-info">
+                <h3>Skittles</h3>
+                <span class="price">$3.00</span>
+            </div>
+        </div>
+        
+        <div class="menu-item">
+            <div class="image-container" onclick="toggleSpicy(this)">
+                <img src="rellerindos.webp" alt="Rollers" class="gummy-img img-normal">
+                <img src="rellerindos_enchilados.webp" alt="Spicy Rollers" class="gummy-img img-spicy">
+            </div>
+            <div class="item-info">
+                <h3>Rollers</h3>
+                <span class="price">$3.00</span>
+            </div>
+        </div>
+        
+        <div class="menu-item">
+            <div class="image-container" onclick="toggleSpicy(this)">
+                <img src="aciduladitos.webp" alt="Sour Candies" class="gummy-img img-normal">
+                <img src="aciduladitos_enchilados.webp" alt="Spicy Sour Candies" class="gummy-img img-spicy">
+            </div>
+            <div class="item-info">
+                <h3>Sour Candies</h3>
+                <span class="price">$3.00</span>
+            </div>
+        </div>
+        
+    </main>
+    
+    <script>
+        function toggleSpicy(container) {
+            container.classList.toggle('active');
+            const element = container.querySelector(".img-normal"); 
+            element.classList.toggle('img-normal-hidden');
+        }
+        
+        document.addEventListener('touchstart', function() {}, true);
+    </script>
+
+</body>
+</html>
